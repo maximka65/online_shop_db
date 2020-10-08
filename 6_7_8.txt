@@ -1,0 +1,117 @@
+-- выборки
+
+SELECT * FROM items LIMIT 100;
+
+-- сколько одежды каждого размера есть в базе
+SELECT (SELECT name FROM sizes WHERE size_id = id), SUM(quantity)
+	FROM items
+	GROUP BY size_id;
+	
+-- количество футболок из колекции весна весна-лето лето;
+SELECT * FROM item_groups;
+SELECT * FROM collecions;
+
+SELECT COUNT(*) 
+	FROM items 
+	JOIN item_groups ig 
+	ON ig.id = group_id 
+	JOIN collecions c 
+	ON c.id = collection_id
+	WHERE ig.name = 'T-shirt' AND c.id IN (1,4,6);
+	
+-- какие из понравившейся товаров подходят пользователю 7 если у него рамер L
+SELECT * FROM favorite_items fi;
+
+SELECT i.id, i.name, s.name
+	FROM items i 
+	JOIN favorite_items fi
+	ON i.id = fi.item_id
+	JOIN sizes s 
+	ON i.size_id = s.id
+	WHERE fi.user_id = 7 AND s.name = 'L';
+
+-- Запрос для вывода корзины пользователя 7
+
+SELECT * FROM shopping_cart sc;
+
+SELECT i.id, i.name, ig.name, c.name, s.name, c2.name
+	FROM shopping_cart sc 
+	JOIN users u 
+	ON user_id = id
+	JOIN items i
+	ON sc.item_id = i.id 
+	JOIN sizes s 
+	ON i.size_id = s.id
+	JOIN item_groups ig
+	ON i.group_id = ig.id
+	JOIN collecions c2 
+	ON i.collection_id = c2.id
+	JOIN colors c 
+	ON i.color_id = c.id
+	WHERE u.id = 7;
+
+-- представления 
+
+-- Общее количество вещей по категориям
+
+CREATE VIEW item_group_quantity
+	AS
+		SELECT DISTINCT it.name,
+			SUM(quantity) OVER(PARTITION BY group_id)
+			FROM items
+			JOIN item_groups it
+			ON items.group_id = it.id;
+
+SELECT * FROM item_group_quantity;
+
+-- сколько одежды каждого размера есть в базе
+
+CREATE VIEW sizes_quantity
+	AS
+		SELECT (SELECT name FROM sizes WHERE size_id = id), SUM(quantity)
+			FROM items
+			GROUP BY size_id;
+		
+SELECT * FROM sizes_quantity;
+
+-- тригеры и процедуры
+DESC users;
+ 
+-- исполнить код в другом файле
+-- процедуры для вставки в таблицы users и items
+DELIMITER //
+
+CREATE PROCEDURE new_users(n1 VARCHAR(50), n2 VARCHAR(50), g TINYINT(1), b DATE, em varchar(100))
+     begin
+        insert into users (frist_name, last_name, gender, birthday_at, email)
+        	value (n1, n2, g, b, em);
+     end
+//
+
+CREATE PROCEDURE new_item(n1 VARCHAR(256), q TINYINT UNSIGNED, 
+						  s INT UNSIGNED, c INT UNSIGNED, g INT UNSIGNED,
+						  coll INT UNSIGNED)
+     begin
+        insert into items(name, quantity, size_id, color_id, group_id, collection_id)
+        	value (n1, q, s, c, g, coll);
+     end
+//
+
+-- тригер на вставку значения m вместо 1 и f вместо 0 в gender
+ALTER TABLE users MODIFY gender VARCHAR(1) NOT NULL;
+UPDATE users SET gender = 'm' WHERE gender = '1';
+UPDATE users SET gender = 'f' WHERE gender = '0';
+DELIMITER //
+
+CREATE TRIGGER gender_before_inser BEFORE INSERT ON users
+FOR EACH ROW BEGIN
+	IF NEW.gender = 0 THEN
+			SET NEW.gender = 'f';
+		ELSE
+			SET NEW.gender = 'm';
+		END IF;
+END//
+
+CALL new_users('mas','dfsg','1','2020-10-20','dgfr@vrvv.gt');
+
+SELECT gender FROM users;

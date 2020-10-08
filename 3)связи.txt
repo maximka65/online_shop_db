@@ -1,0 +1,91 @@
+USE online_shop;
+
+SHOW TABLES;
+
+DESC items;
+
+-- вставляем значение в таблицы где нужно в ручную
+
+SELECT * FROM sizes;
+INSERT INTO sizes(name) 
+	VALUES ('2XS'), ('XS'), ('S'), ('M'), ('L');
+INSERT INTO sizes(name) 
+	VALUES ('XL');
+
+SELECT * FROM colors;
+INSERT INTO colors(name) 
+	VALUES ('black'), ('white'), ('green'), ('pink'), ('red');
+INSERT INTO colors(name) 
+	VALUES ('gray');
+
+SELECT * FROM item_groups;
+INSERT INTO item_groups(name)
+	VALUES ('t-shirt'), ('pants'), ('jeens'), ('shirt'), ('accessories');
+INSERT INTO item_groups(name)
+	VALUES ('glasses');
+
+
+SELECT * FROM collecions;
+INSERT INTO collecions(name)
+	VALUES ('summer'), ('winter'), ('autumn'), ('spring');
+INSERT INTO collecions(name)
+	VALUES ('autumn-winter'), ('spring-summer');
+-- создаем связи
+desc items;
+DESC sizes;
+DESC item_groups;
+
+SELECT * FROM items;
+SELECT * FROM items;
+
+ALTER TABLE items
+	ADD CONSTRAINT items_size_id_fk
+		FOREIGN KEY (size_id) REFERENCES sizes(id)
+			ON DELETE RESTRICT,
+	ADD CONSTRAINT items_color_id_fk
+		FOREIGN KEY (color_id) REFERENCES colors(id)
+			ON DELETE RESTRICT,
+	ADD CONSTRAINT item_groups_id_fk
+		FOREIGN KEY (group_id) REFERENCES item_groups(id)
+			ON DELETE RESTRICT,
+	ADD CONSTRAINT item_collection_id_fk
+		FOREIGN KEY (collection_id) REFERENCES collecions(id)
+			ON DELETE RESTRICT;
+		
+SHOW TABLES;
+DESC addresses;
+
+ALTER TABLE addresses 
+	ADD CONSTRAINT addresses_user_id_fk
+		FOREIGN KEY (user_id) REFERENCES users(id)
+			ON DELETE RESTRICT;
+
+DESC card_data;
+
+ALTER TABLE card_data 
+	ADD CONSTRAINT card_data_user_id_fk
+		FOREIGN KEY (user_id) REFERENCES users(id)
+			ON DELETE RESTRICT;
+			
+SHOW TABLES;
+DESC favorite_items;
+
+ALTER TABLE favorite_items 
+	ADD CONSTRAINT favorite_items_user_id_fk
+		FOREIGN KEY (user_id) REFERENCES users(id)
+			ON DELETE RESTRICT,
+	ADD CONSTRAINT favorite_items_item_id_fk
+		FOREIGN KEY (item_id) REFERENCES items(id)
+			ON DELETE RESTRICT;
+
+DESC shopping_cart;
+
+ALTER TABLE shopping_cart 
+	ADD CONSTRAINT shopping_cart_user_id_fk
+		FOREIGN KEY (user_id) REFERENCES users(id)
+			ON DELETE RESTRICT,
+	ADD CONSTRAINT shopping_cart_item_id_fk
+		FOREIGN KEY (item_id) REFERENCES items(id)
+			ON DELETE RESTRICT;
+		
+SHOW TABLES;
